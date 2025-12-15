@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("AutoMag")
+st.title("         AutoMag")
 st.write(
     "Upload the magazine template and two content PDFs to generate the final magazine."
 )
@@ -32,7 +32,7 @@ if template_file and pdf_files and len(pdf_files) == 2:
 
     st.success("Files uploaded successfully. Ready to generate.")
 
-    if st.button("🚀 Generate Magazine"):
+    if st.button("Generate Magazine"):
 
         with st.spinner("Processing PDFs and generating magazine..."):
 
