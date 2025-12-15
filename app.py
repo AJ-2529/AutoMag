@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("📘 Magazine Generator")
+st.title("AutoMag")
 st.write(
     "Upload the magazine template and two content PDFs to generate the final magazine."
 )
