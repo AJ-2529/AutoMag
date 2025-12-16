@@ -1,7 +1,7 @@
 # backend/fill_template.py
 
 from docx import Document
-from docx.shared import Inches
+from docx.shared import Inches, Pt
 from docx.oxml import OxmlElement, ns
 from backend.headings import normalize_heading
 import re
@@ -27,17 +27,13 @@ def normalize_header_cell(text):
     if not text:
         return ""
     text = text.lower()
-    text = re.sub(r"[^\w\s]", "", text)   # remove punctuation
-    text = re.sub(r"\s+", " ", text)      # normalize spaces
+    text = re.sub(r"[^\w\s]", "", text)
+    text = re.sub(r"\s+", " ", text)
     text = text.replace("sl no", "slno")
-    text = text.replace("slno", "slno")
     return text.strip()
 
 
 def table_header_key(table):
-    """
-    NORMALIZED header key so visually identical tables merge.
-    """
     return tuple(normalize_header_cell(c) for c in table[0])
 
 
@@ -76,29 +72,51 @@ def fill_template(template_path, output_path, doc1, doc2):
 
         cursor = para
 
-        # -------- TECHNICAL ARTICLES (SPECIAL ORDER) --------
+        # ======================================================
+        # TECHNICAL ARTICLES (STABLE VERSION)
+        # ======================================================
         if key == "TECHNICAL ARTICLES:":
-            for src in (doc1, doc2):
-                for img in src[key]["images"]:
-                    p = doc.add_paragraph()
-                    p.add_run().add_picture(img, width=Inches(4))
-                    insert_after(cursor, p)
-                    cursor = p
+            src = doc1  # AI content only in doc1
 
-                for line in src[key]["text"]:
+            if src[key]["text"]:
+                # -------- HEADING --------
+                heading_para = doc.add_paragraph()
+                run = heading_para.add_run(src[key]["text"][0])
+                run.bold = True
+                run.font.size = Pt(14)
+                insert_after(cursor, heading_para)
+                cursor = heading_para
+
+                # -------- IMAGE (REDUCED SIZE) --------
+                if src[key]["images"]:
+                    img_para = doc.add_paragraph()
+                    img_para.add_run().add_picture(
+                        src[key]["images"][0],
+                        width=Inches(3.0)  # 🔹 reduced size (safe)
+                    )
+                    insert_after(cursor, img_para)
+                    cursor = img_para
+
+                # -------- PARAGRAPHS --------
+                for line in src[key]["text"][1:]:
                     p = doc.add_paragraph(line)
                     insert_after(cursor, p)
                     cursor = p
+
             continue
 
-        # -------- TEXT --------
+        # ======================================================
+        # NORMAL TEXT SECTIONS
+        # ======================================================
         for src in (doc1, doc2):
             for line in src[key]["text"]:
                 p = doc.add_paragraph(line)
                 insert_after(cursor, p)
                 cursor = p
 
-        # -------- MERGED TABLES (FINAL, FIXED) --------
+        # ======================================================
+        # MERGED TABLES (UNCHANGED & STABLE)
+        # ======================================================
         all_tables = doc1[key]["tables"] + doc2[key]["tables"]
         merged_tables = merge_tables(all_tables)
 
@@ -111,11 +129,11 @@ def fill_template(template_path, output_path, doc1, doc2):
                 cols=len(header)
             )
 
-            # header
+            # Header
             for c, cell in enumerate(header):
                 table.rows[0].cells[c].text = str(cell)
 
-            # rows (doc1 first, then doc2)
+            # Rows
             for r, row in enumerate(rows, start=1):
                 for c, cell in enumerate(row):
                     table.rows[r].cells[c].text = str(cell or "")
