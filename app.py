@@ -34,7 +34,7 @@ if template_file and pdf_files and len(pdf_files) == 2:
 
     st.success("Files uploaded successfully. Ready to generate.")
 
-    if st.button("🚀 Generate Magazine"):
+    if st.button("Generate Magazine"):
 
         with st.spinner("Processing PDFs and generating magazine..."):
 
