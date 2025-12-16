@@ -2,15 +2,17 @@
 
 import streamlit as st
 import os
+
 from backend.extract_pdf import extract_pdf_to_sections
 from backend.fill_template import fill_template
+from backend.ai_technical_article import generate_ai_technical_article
 
 st.set_page_config(
     page_title="Magazine Generator",
     layout="centered"
 )
 
-st.title("         AutoMag")
+st.title("📘 Magazine Generator")
 st.write(
     "Upload the magazine template and two content PDFs to generate the final magazine."
 )
@@ -32,7 +34,7 @@ if template_file and pdf_files and len(pdf_files) == 2:
 
     st.success("Files uploaded successfully. Ready to generate.")
 
-    if st.button("Generate Magazine"):
+    if st.button("🚀 Generate Magazine"):
 
         with st.spinner("Processing PDFs and generating magazine..."):
 
@@ -52,10 +54,10 @@ if template_file and pdf_files and len(pdf_files) == 2:
                     f.write(pdf.read())
                 pdf_paths.append(path)
 
-            # Sort so doc1 always comes first
+            # Ensure order
             pdf_paths.sort()
 
-            # Run backend (UNCHANGED)
+            # ---------------- BACKEND EXTRACTION ----------------
             doc1 = extract_pdf_to_sections(
                 pdf_paths[0],
                 "temp_uploads/doc1_images"
@@ -65,6 +67,17 @@ if template_file and pdf_files and len(pdf_files) == 2:
                 "temp_uploads/doc2_images"
             )
 
+            # ---------------- AI TECHNICAL ARTICLE (OVERRIDE) ----------------
+            ai_article = generate_ai_technical_article()
+
+            doc1["TECHNICAL ARTICLES:"] = ai_article
+            doc2["TECHNICAL ARTICLES:"] = {
+                "text": [],
+                "tables": [],
+                "images": []
+            }
+
+            # ---------------- FINAL DOC GENERATION ----------------
             output_path = "outputs/final_magazine.docx"
 
             fill_template(
