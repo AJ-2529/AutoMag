@@ -27,9 +27,11 @@ def generate_image_for_topic(topic: str) -> str:
     }
 
     prompt = (
-        f"Professional academic illustration of {topic}, "
-        "computer science concept, clean background, "
-        "technical diagram style, high quality, no text"
+        f"Minimalist conceptual illustration representing the idea of {topic}. "
+    "Clean and modern visual style, smooth shapes, soft lighting, "
+    "abstract technological theme, professional academic look. "
+    "Simple composition, neutral colors, white or light background. "
+    "No text, no labels, no diagrams, no arrows, no people, no watermark."
     )
 
     response = requests.post(
